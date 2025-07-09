@@ -5,24 +5,20 @@ const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const userRouter = require("./routes/userRoutes");
 const videoRouter = require("./routes/videoRoutes");
+const pingRouter = require("./routes/pingRoute");
 
 const helmet = require("helmet");
 const hpp = require("hpp");
 const rateLimit = require("express-rate-limit");
 
-
 dotenv.config({ path: path.join(__dirname, "/config.env") });
-
 
 connectDB();
 
-
 const app = express();
-
 
 app.use(helmet());
 app.use(hpp());
-
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -30,7 +26,6 @@ const limiter = rateLimit({
   message: "Too many requests from this IP, please try again later.",
 });
 app.use(limiter);
-
 
 const allowedOrigins = [
   "http://localhost:3001",
@@ -49,10 +44,8 @@ app.use(
   })
 );
 
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 
 const uploadsPath = path.join(__dirname, "uploads");
 app.use(
@@ -66,6 +59,7 @@ app.use(
 
 app.use("/api/user", userRouter);
 app.use("/api/videos", videoRouter);
+app.use("/api", pingRouter);
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
