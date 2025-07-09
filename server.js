@@ -5,7 +5,7 @@ const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const userRouter = require("./routes/userRoutes");
 const videoRouter = require("./routes/videoRoutes");
-const pingRouter = require("./routes/pingRoute");
+const pingRouter = require("./routes/pingRoutes");
 
 const helmet = require("helmet");
 const hpp = require("hpp");
