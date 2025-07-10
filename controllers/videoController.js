@@ -24,21 +24,20 @@ exports.uploadVideo = async (req, res) => {
         });
       }
 
-      const existing = await Video.findOne({ url, creator: req.user.id });
+      
+      const existing = await Video.findOne({
+        url,
+        creator: req.user.id,
+        type: "long",
+        isDeleted: false,
+      });
+
       if (existing) {
         return res.status(400).json({
           message: "You have already uploaded this long-form video.",
         });
       }
     }
-
-    const newVideo = new Video({
-      title,
-      description,
-      type,
-      creator: req.user.id,
-      price: Number(price) || 0,
-    });
 
     if (type === "short") {
       if (!req.file || !req.file.path) {
@@ -50,6 +49,8 @@ exports.uploadVideo = async (req, res) => {
       const existing = await Video.findOne({
         originalName: req.file.originalname,
         creator: req.user.id,
+        type: "short",
+        isDeleted: false,
       });
 
       if (existing) {
@@ -57,10 +58,21 @@ exports.uploadVideo = async (req, res) => {
           message: "You have already uploaded this short-form video.",
         });
       }
+    }
 
+
+    const newVideo = new Video({
+      title,
+      description,
+      type,
+      creator: req.user.id,
+      price: Number(price) || 0,
+    });
+
+    if (type === "short") {
       newVideo.filePath = `/uploads/${req.file.filename}`;
       newVideo.originalName = req.file.originalname;
-    } else if (type === "long") {
+    } else {
       newVideo.url = url;
     }
 
@@ -72,18 +84,13 @@ exports.uploadVideo = async (req, res) => {
       video: newVideo,
     });
   } catch (err) {
-    if (err.code === 11000) {
-      const field = Object.keys(err.keyValue)[0];
-      return res.status(400).json({
-        message: `The ${field} "${err.keyValue[field]}" is already taken.`,
-      });
-    }
     return res.status(500).json({
       status: "fail",
       message: err.message || "Internal Server Error",
     });
   }
 };
+
 
 exports.getAllVideos = async (req, res) => {
   try {
