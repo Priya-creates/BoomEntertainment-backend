@@ -14,10 +14,6 @@ const videoSchema = new mongoose.Schema(
       required: [true, "Every video must have a price"],
       default: 0,
     },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-    },
     creator: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -64,5 +60,4 @@ const videoSchema = new mongoose.Schema(
 );
 
 const Video = mongoose.model("Video", videoSchema);
-
 module.exports = Video;

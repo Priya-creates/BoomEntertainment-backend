@@ -1,31 +1,29 @@
 const multer = require("multer");
-const path = require("path");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("../utils/cloudinary");
 
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/");
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const ext = path.extname(file.originalname);
-    cb(null, uniqueSuffix + ext);
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "BoomVideos", // Folder in your Cloudinary account
+    resource_type: "video", // Ensures video upload
+    allowed_formats: ["mp4"], // Restrict to MP4
+    public_id: () => `${Date.now()}-${Math.round(Math.random() * 1e9)}`, // Unique filename
   },
 });
 
-const fileFilter = (req, file, cb) => {
-  const ext = path.extname(file.originalname).toLowerCase();
-  if (ext === ".mp4") {
-    cb(null, true);
-  } else {
-    cb(new Error("Only .mp4 files are allowed"), false);
-  }
-};
-
 const upload = multer({
-  storage: storage,
-  fileFilter: fileFilter,
-  limits: { fileSize: 300 * 1024 * 1024 }, 
+  storage,
+  limits: {
+    fileSize: 300 * 1024 * 1024, // Max 300MB
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === "video/mp4") {
+      cb(null, true);
+    } else {
+      cb(new Error("Only .mp4 videos are allowed!"), false);
+    }
+  },
 });
 
 module.exports = upload;
