@@ -6,36 +6,39 @@ const connectDB = require("./config/db");
 const userRouter = require("./routes/userRoutes");
 const videoRouter = require("./routes/videoRoutes");
 const pingRouter = require("./routes/pingRoutes");
-
 const helmet = require("helmet");
 const hpp = require("hpp");
 const rateLimit = require("express-rate-limit");
 
-// Load environment variables
 dotenv.config({ path: path.join(__dirname, "/config.env") });
 
-// Connect to MongoDB
 connectDB();
 
 const app = express();
 
-// Security middleware
+
+app.set("trust proxy", 1);
+
+
 app.use(helmet());
 app.use(hpp());
 
-// Rate limiter
+
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
-  message: "Too many requests from this IP, please try again later.",
+  windowMs: 5 * 60 * 1000,
+  limit: 1000,             
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: "You’ve hit the rate limit. Please try again later.",
 });
 app.use(limiter);
 
-// Allow only specific frontend domains
+// Allowed frontend domains
 const allowedOrigins = [
   "http://localhost:3001",
-  `https://${process.env.VERCEL_URL}`,
+  "https://boom-entertainment-xi.vercel.app", 
 ];
+
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -49,11 +52,11 @@ app.use(
   })
 );
 
-// Body parsers
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 👇️ Remove this block if you're using Cloudinary instead of local uploads
+// 👇 If NOT using local upload folder anymore (Cloudinary), keep this commented
 // const uploadsPath = path.join(__dirname, "uploads");
 // app.use(
 //   "/uploads",
@@ -64,12 +67,12 @@ app.use(express.urlencoded({ extended: true }));
 //   })
 // );
 
-// API routes
+
 app.use("/api/user", userRouter);
 app.use("/api/videos", videoRouter);
 app.use("/api", pingRouter);
 
-// Start server
+
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
