@@ -1,8 +1,9 @@
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
+const path = require("path");
 
-
-dotenv.config({ path: "./server/config.env" });
+// Correct relative path
+dotenv.config({ path: path.join(__dirname, "../config.env") });
 
 const DB = process.env.MONGO_URI.replace(
   "<password>",
@@ -11,14 +12,12 @@ const DB = process.env.MONGO_URI.replace(
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(DB, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(DB);
     console.log("✅ DB connection successful!");
   } catch (err) {
-    console.log("❌ DB connection unsuccessful");
+    console.error("❌ DB connection unsuccessful");
     console.error(err.message);
+    process.exit(1); // Optional: exit if DB fails
   }
 };
 
